@@ -46,8 +46,44 @@ public class PlaylistDAO extends SQLiteDAOBase implements Serializable{
 
 		return rows;
 	}
-	
-	
+
+
+	/**
+	 * 用name找出一筆資料
+	 */
+	public Playlist getByName(String name){
+
+		SQLiteDatabase db = taskDBOpenHelper.getReadableDatabase();
+
+		Playlist cr = null;
+
+//		String[] columns = new String[] { "unid"  };
+//		String selection = "publishDate_e < ? OR unitId IS null OR publishDate_e IS null";
+//		String selectionArgs[] =  {date};
+//		String groupBy = null;
+//		String having = null;
+//		String orderBy = null;
+//		Cursor c = db.query(TABLE_NAME, columns, selection, selectionArgs, groupBy, having, orderBy);
+//
+		String selectionArgs[] =  {name};
+		Cursor c = db.rawQuery("SELECT * FROM "+ TABLE_NAME + " WHERE name = ?", selectionArgs);
+
+		if(c.getCount()>0)
+		{
+			c.moveToFirst();
+			for(int i=0; i<c.getCount();i++){
+
+				cr = dataToObject(c);
+
+				c.moveToNext();
+			}
+
+		}
+		c.close();
+		return cr;
+	}
+
+
 
 	public long delete(Playlist ace)
 	{
@@ -92,7 +128,6 @@ public class PlaylistDAO extends SQLiteDAOBase implements Serializable{
 	
 	
 	/**
-	 * Use @ Setting.java
 	 */
 	public List<Playlist> getAll(){
 		List<Playlist> aList = new ArrayList<Playlist>();

@@ -60,9 +60,13 @@ public interface IPlayerEngine {
 
 	String getTime(int timeM);
 
-	//----
+	//----===============================================by Judy
 	String getCurrentSongName();
 
 	void setMusicMap(Map<String, Song> musicMap);
+	Map<String, Song> getMusicMap();
 	Song getCurrentSong();
+	void setOriIdx(int oirIdx);
+	int getOriIdx();
+
 }

@@ -37,11 +37,13 @@ public class PlayerEngineImpl implements IPlayerEngine {
 
 	private int selectedOrderIndex = 0;
 
-	private List<String> mediaList = new ArrayList<String>(); //由MediaStore.Audio.Media.DATA取出
+	private static List<String> mediaList = new ArrayList<String>(); //由MediaStore.Audio.Media.DATA取出
 
 	private MediaPlayerEngine mediaPlayerEngine = null;
 
-	private Map<String,Song> musicMap = null;
+	private static Map<String,Song> musicMap = null;//key:Media.DATA ; value:Song
+
+	private static int oriIdx;
 
 	@Override
 	public void setOnCompletionListener(
@@ -98,7 +100,7 @@ public class PlayerEngineImpl implements IPlayerEngine {
 
 
 	public String getCurrentSongName(){
-		Song song = musicMap.get(getPathByPlaybackOrderIndex(selectedOrderIndex));
+		Song song = musicMap.get(getPlayingPath());
 		if(null ==song)
 			return "";
 		else{
@@ -107,7 +109,15 @@ public class PlayerEngineImpl implements IPlayerEngine {
 	}
 
 	public Song getCurrentSong(){
-		return musicMap.get(getPathByPlaybackOrderIndex(selectedOrderIndex));
+		return musicMap.get(getPlayingPath());
+	}
+
+	public void setOriIdx(int oriIdx){
+		this.oriIdx = oriIdx;
+	}
+
+	public int getOriIdx(){
+		return oriIdx;
 	}
 
 	@Override
@@ -129,13 +139,13 @@ public class PlayerEngineImpl implements IPlayerEngine {
 		if (!isEmpty()) {
 			selectedOrderIndex = mediaList.indexOf(path);
 			Log.i(
-							BelmotPlayer.TAG + "---PlayerEngineImpl---",
-							"Line 123 next():Path="
-									+ path
-									+ "***********selectedOrderIndex="
-									+ selectedOrderIndex
-									+ "***************************************playbackOrder="
-									+ playbackOrder.toArray());
+					BelmotPlayer.TAG + "---PlayerEngineImpl---",
+					"Line 123 next():Path="
+							+ path
+							+ "***********selectedOrderIndex="
+							+ selectedOrderIndex
+							+ "***************************************playbackOrder="
+							+ playbackOrder.toArray());
 			// selected begins from zero.
 			selectedOrderIndex++;
 			selectedOrderIndex %= mediaList.size();
@@ -210,6 +220,8 @@ public class PlayerEngineImpl implements IPlayerEngine {
 
 	}
 
+
+
 	public void release(){
 		mediaPlayerEngine.release();
 	}
@@ -218,6 +230,8 @@ public class PlayerEngineImpl implements IPlayerEngine {
 		this.musicMap = musicMap;
 	}
 
+	public Map<String, Song>  getMusicMap(){return musicMap;}
+
 	private void calculateOrder(boolean force) {
 		int beforeSelected = 0;
 		if (!playbackOrder.isEmpty()) {
@@ -225,10 +239,10 @@ public class PlayerEngineImpl implements IPlayerEngine {
 			playbackOrder.clear();
 		}
 		Log.i(BelmotPlayer.TAG + "---PlayerEngineImpl---",
-						"Line 200 calculateOrder():beforeSelected="
-								+ beforeSelected
-								+ "***********selectedOrderIndex="
-								+ selectedOrderIndex);
+				"Line 200 calculateOrder():beforeSelected="
+						+ beforeSelected
+						+ "***********selectedOrderIndex="
+						+ selectedOrderIndex);
 		for (int i = 0; i < getListSize(); i++) {
 			playbackOrder.add(i, i);
 		}
@@ -237,23 +251,23 @@ public class PlayerEngineImpl implements IPlayerEngine {
 			playbackMode = PlaybackMode.NORMAL;
 		}
 		switch (playbackMode) {
-		case NORMAL: {
-			break;
-		}
-		case SHUFFLE: {
-			Collections.shuffle(playbackOrder);
-			break;
-		}
-		case REPEAT: {
-			selectedOrderIndex = beforeSelected;
-			break;
-		}
-		case SHUFFLE_AND_REPEAT: {
-			break;
-		}
-		default: {
-			break;
-		}
+			case NORMAL: {
+				break;
+			}
+			case SHUFFLE: {
+				Collections.shuffle(playbackOrder);
+				break;
+			}
+			case REPEAT: {
+				selectedOrderIndex = beforeSelected;
+				break;
+			}
+			case SHUFFLE_AND_REPEAT: {
+				break;
+			}
+			default: {
+				break;
+			}
 		}
 	}
 

@@ -60,13 +60,13 @@
     </RelativeLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-      android:layout_width="match_parent"
+      android:layout_width="wrap_content"
       android:layout_height="match_parent"
       android:orientation="vertical">
 
       <TextView
         android:id="@+id/id_title"
-        android:layout_width="match_parent"
+        android:layout_width="220dp"
         android:layout_height="72dp"
         android:gravity="left"
         android:text="ABCD"
@@ -101,6 +101,19 @@
           android:layout_below="@+id/card_view"/>
 
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="1">
+
+      <ImageButton
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:id="@+id/ib_itemEdit"
+          android:background="@android:drawable/arrow_down_float" />
     </LinearLayout>
 
 

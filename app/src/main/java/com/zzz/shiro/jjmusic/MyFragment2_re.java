@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * Created by wc on 2016/8/22.
  */
-public class MyFragment2 extends Fragment {
+public class MyFragment2_re extends Fragment {
 
     private String className = "MyFragment2";
     private int idx = 0;
@@ -68,6 +68,7 @@ public class MyFragment2 extends Fragment {
     private BelmotPlayer belmotPlayer;
 
     private ImageButton playback_toggle_btn;
+    private SeekBar seek_bar;
     private TextView playback_current_time_tv;
     private TextView playback_total_time_tv;
 
@@ -129,6 +130,7 @@ public class MyFragment2 extends Fragment {
                 LinearLayout gg = (LinearLayout) getActivity().findViewById(R.id.musicBar);
                 gg.setVisibility(View.VISIBLE);
 
+                openPanel();
 
             }
 
@@ -145,6 +147,7 @@ public class MyFragment2 extends Fragment {
 
 
 
+                openPanel();
             }
 
             @Override
@@ -187,12 +190,57 @@ public class MyFragment2 extends Fragment {
 
 
         playback_toggle_btn = (ImageButton) getActivity().findViewById(R.id.playback_toggle);
+        playback_toggle_btn.setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View v) {
+                play();
+
+            }
+        });
+
+        seek_bar = (SeekBar) getActivity().findViewById(R.id.playback_seeker);
         playback_current_time_tv = (TextView) getActivity().findViewById(R.id.playback_current_time);
 
 
 
 
+        SeekBar.OnSeekBarChangeListener seekbarListener = new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress,
+                                          boolean fromUser) {
+                if (fromUser) {
+                    if (belmotPlayer.getPlayerEngine().getPlayingPath() != ""
+                            && null != belmotPlayer.getPlayerEngine().getPlayingPath()) {
+
+                        seek_bar_handler.removeCallbacks(refresh);
+                        playback_current_time_tv.setText(
+                                belmotPlayer.getPlayerEngine().getTime(seekBar.getProgress())
+                        );
+
+                    }
+                    else {
+                        seek_bar.setProgress(0);
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+                belmotPlayer.getPlayerEngine().forward(seekBar.getProgress());
+                seek_bar_handler.postDelayed(refresh, 1000);
+            }
+        };
+
+        seek_bar.setOnSeekBarChangeListener(seekbarListener);
 
         playback_total_time_tv = (TextView) getActivity().findViewById(R.id.playback_total_time);
 
@@ -504,7 +552,58 @@ public class MyFragment2 extends Fragment {
     }
 
 
+    private void play() {
+        if (belmotPlayer.getPlayerEngine().isPlaying()) {//播放中
+            belmotPlayer.getPlayerEngine().pause();
+            seek_bar_handler.removeCallbacks(refresh);
+            playback_toggle_btn
+                    .setBackgroundResource(R.drawable.play_button_default);
+        } else if (belmotPlayer.getPlayerEngine().isPause()) {//暫停中
+            belmotPlayer.getPlayerEngine().start();
+            seek_bar_handler.postDelayed(refresh, 1000); //實現一個N秒的一定時器
+            playback_toggle_btn
+                    .setBackgroundResource(R.drawable.pause_button_default);
+        }
+
+    }
+
+
+    private Runnable refresh = new Runnable() {
+        public void run() {
+            int currently_Progress = seek_bar.getProgress() + 1000;
+            playback_current_time_tv.setText(belmotPlayer.getPlayerEngine()
+                    .getCurrentTime());
+            seek_bar_handler.postDelayed(refresh, 1000);
+        }
+    };
+
+
+    /**
+     * 展開播放面板
+     */
+    private void openPanel(){
+        if (belmotPlayer.getPlayerEngine().getPlayingPath() != ""
+                && null != belmotPlayer.getPlayerEngine().getPlayingPath()) {
+            playback_current_time_tv.setText(belmotPlayer.getPlayerEngine()
+                    .getCurrentTime());
+            playback_total_time_tv.setText(belmotPlayer.getPlayerEngine()
+                    .getDurationTime());
+        }
 
 
 
+
+        if (belmotPlayer.getPlayerEngine().isPlaying()) {
+            seek_bar.setMax(Integer.valueOf(belmotPlayer.getPlayerEngine()
+                    .getDuration()));
+            seek_bar_handler.postDelayed(refresh, 1000);//每一秒刷新秒數顯示器
+            playback_toggle_btn
+                    .setBackgroundResource(R.drawable.play_button_default);
+            p_title.setText(s_name.getText()==null?"":s_name.getText().toString());
+
+        } else {
+            playback_toggle_btn
+                    .setBackgroundResource(R.drawable.pause_button_default);
+        }
+    }
 }

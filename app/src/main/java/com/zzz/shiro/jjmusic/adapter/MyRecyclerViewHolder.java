@@ -21,6 +21,7 @@ package com.zzz.shiro.jjmusic.adapter;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -32,6 +33,7 @@ public class MyRecyclerViewHolder extends RecyclerView.ViewHolder {
   public TextView mTextView;
   public ImageView image_album;
   public ImageView image_play;
+  public ImageButton ib_edit;
 
   public MyRecyclerViewHolder(View itemView) {
     super(itemView);
@@ -43,5 +45,8 @@ public class MyRecyclerViewHolder extends RecyclerView.ViewHolder {
     image_play = (ImageView) itemView.findViewById(R.id.imageView2);
     image_play.setMaxWidth(100);
     image_play.setMaxHeight(100);
+
+
+    ib_edit = (ImageButton) itemView.findViewById(R.id.ib_itemEdit);
   }
 }

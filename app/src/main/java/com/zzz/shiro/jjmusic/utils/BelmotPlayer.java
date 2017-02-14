@@ -8,6 +8,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 
 import com.zzz.shiro.jjmusic.BottomBar;
+import com.zzz.shiro.jjmusic.Song;
+
+import java.util.List;
+import java.util.Map;
 
 public class BelmotPlayer extends Application {
 	public static String TAG = "BelmotPlayer";
@@ -16,11 +20,11 @@ public class BelmotPlayer extends Application {
 
 	private static BelmotPlayer instance;
 
-	private static BottomBar bottomBar;
 
 	@Override
 	public void onCreate() {
 		instance = this;
+
 		super.onCreate();
 	}
 
@@ -31,16 +35,13 @@ public class BelmotPlayer extends Application {
 		return playerEngine;
 	}
 
-	public BottomBar getBottomBar(Activity activity){
-		if(null == bottomBar){
-			bottomBar = BottomBar.getInstance(activity);
-		}
-		return bottomBar;
-	}
+
 
 	public static BelmotPlayer getInstance() {
 		return instance;
 	}
+
+
 
 	/**
 	 * Retrieves application's version number from the manifest

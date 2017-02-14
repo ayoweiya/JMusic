@@ -20,15 +20,11 @@
 package com.zzz.shiro.jjmusic.adapter;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.PorterDuff;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.zzz.shiro.jjmusic.R;
 import com.zzz.shiro.jjmusic.Song;
@@ -36,11 +32,11 @@ import com.zzz.shiro.jjmusic.Song;
 import java.util.List;
 
 
-public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewHolder> {
+public class MyRecyclerViewAdapter2 extends RecyclerView.Adapter<MyRecyclerViewHolder> {
 
 
   //自定義一個Listener 介面
-  public interface AdapterOnItemClickListener {
+  public interface AdapterOnItemClickListener2 {
     void aOnItemClick(View view, int position, MyRecyclerViewHolder holder);
 
 
@@ -51,7 +47,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewHo
 
   public Context mContext;
   public LayoutInflater mLayoutInflater;
-  public AdapterOnItemClickListener mOnItemClickListener;
+  public AdapterOnItemClickListener2 mOnItemClickListener;
   public BtnListenerInterface btnListenerInterface;
 
   public List songList; //歌們
@@ -62,7 +58,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewHo
      * @param mContext
      * @param songList
      */
-  public MyRecyclerViewAdapter(Context mContext,List songList) {
+  public MyRecyclerViewAdapter2(Context mContext, List songList) {
     this.mContext = mContext;
     mLayoutInflater = LayoutInflater.from(mContext);
 
@@ -130,7 +126,7 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewHo
 
 
 
-  public void setOnItemClickListener(AdapterOnItemClickListener listener) {
+  public void setOnItemClickListener(AdapterOnItemClickListener2 listener) {
     this.mOnItemClickListener = listener;
   }
 

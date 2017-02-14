@@ -1,35 +1,36 @@
 package com.zzz.shiro.jjmusic;
 
 import android.content.ContentResolver;
-import android.content.ContentUris;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.ButtonBarLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
+import com.zzz.shiro.jjmusic.adapter.BtnListenerInterface;
 import com.zzz.shiro.jjmusic.adapter.MyRecyclerViewAdapter;
 import com.zzz.shiro.jjmusic.adapter.MyRecyclerViewHolder;
+import com.zzz.shiro.jjmusic.playlist.Playlist;
+import com.zzz.shiro.jjmusic.playlist.PlaylistDAO;
 import com.zzz.shiro.jjmusic.utils.BelmotPlayer;
 import com.zzz.shiro.jjmusic.utils.Constants;
+import com.zzz.shiro.jjmusic.utils.DlgUtil;
 import com.zzz.shiro.jjmusic.utils.PicUtil;
+import com.zzz.shiro.jjmusic.utils.StringTool;
 
 
 import java.util.ArrayList;
@@ -62,48 +63,25 @@ public class MyFragment extends Fragment
     private LinkedList<Song> songList = null;
 
 
-    private BelmotPlayer belmotPlayer;
-
-    private ImageButton playback_toggle_btn;
-    private SeekBar seek_bar;
-    private TextView playback_current_time_tv;
-    private TextView playback_total_time_tv;
-
-    //Bottom bar
-    private static SlidingUpPanelLayout slidingUpPanelLayout;
-//    private static ImageView s_image_album;
-//    private static TextView s_name;
-//    private static TextView s_singer;
-
-    //panel
-    private TextView p_title;
-
-    private Handler seek_bar_handler = new Handler();
+    private static BottomBar bottomBar;
 
 
-
-//    public static MyFragment newInstance(String param1, String param2) {
-//        MyFragment fragment = new MyFragment();
-//        Bundle args = new Bundle();
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(className,"onCreate");
         if (getArguments() != null) {
             idx = (int) getArguments().get("idx");
         }
 
         isPause = true;
 
-        if (null == belmotPlayer) {
-            belmotPlayer = BelmotPlayer.getInstance();
+
+
+        if(bottomBar ==null){
+            bottomBar = BottomBar.getInstance(getActivity());
         }
-
-        Log.d(className,"onCreate");
-
 
 
     }
@@ -111,102 +89,10 @@ public class MyFragment extends Fragment
 
 
     public void initComponent(){
+        Log.d(className,"initComponent");
         //注意! 如果這邊的getActivity() 改成用inflater.inflate取得的layoutout 會造成set無效
 
 
-
-
-        Log.d(className,"initComponent");
-        belmotPlayer.getBottomBar(getActivity()).init(getActivity());
-        belmotPlayer.getBottomBar(getActivity())
-                .setSongData(belmotPlayer.getPlayerEngine().getCurrentSong());
-
-        Log.d(className,"bbbb " +belmotPlayer.getPlayerEngine().getCurrentSongName());
-        ;
-
-        ImageButton playback_pre_btn = (ImageButton) getActivity().findViewById(R.id.playback_pre);
-        playback_pre_btn.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Log.d(className,"playback_pre_btn");
-
-                belmotPlayer.getPlayerEngine().previous();
-
-            }
-        });
-
-
-        ImageButton playback_next_btn = (ImageButton) getActivity().findViewById(R.id.playback_next);
-
-        playback_next_btn.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Log.d(className,"playback_next_btn");
-
-                belmotPlayer.getPlayerEngine().next();
-
-            }
-        });
-
-
-        playback_toggle_btn = (ImageButton) getActivity().findViewById(R.id.playback_toggle);
-        playback_toggle_btn.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                play();
-
-            }
-        });
-
-        seek_bar = (SeekBar) getActivity().findViewById(R.id.playback_seeker);
-        playback_current_time_tv = (TextView) getActivity().findViewById(R.id.playback_current_time);
-
-
-
-
-        SeekBar.OnSeekBarChangeListener seekbarListener = new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress,
-                                          boolean fromUser) {
-                if (fromUser) {
-                    if (belmotPlayer.getPlayerEngine().getPlayingPath() != ""
-                            && null != belmotPlayer.getPlayerEngine().getPlayingPath()) {
-
-                        seek_bar_handler.removeCallbacks(refresh);
-                        playback_current_time_tv.setText(
-                                belmotPlayer.getPlayerEngine().getTime(seekBar.getProgress())
-                        );
-
-                    }
-                    else {
-                        seek_bar.setProgress(0);
-                    }
-
-                }
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-                belmotPlayer.getPlayerEngine().forward(seekBar.getProgress());
-                seek_bar_handler.postDelayed(refresh, 1000);
-            }
-        };
-
-        seek_bar.setOnSeekBarChangeListener(seekbarListener);
-
-        playback_total_time_tv = (TextView) getActivity().findViewById(R.id.playback_total_time);
-
-        p_title = (TextView) getActivity().findViewById(R.id.panel_title);
     }
 
 
@@ -229,16 +115,6 @@ public class MyFragment extends Fragment
         configRecyclerView();
         initComponent();
 
-
-
-
-        //設定slidingPane一為顯示
-//        SlidingUpPanelLayout slidingLayout = (SlidingUpPanelLayout)mainView.findViewById(R.id.sliding_layout);
-//        slidingLayout.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED );
-//        slidingLayout.callOnClick();
-
-
-
         return mView;
     }
 
@@ -260,6 +136,19 @@ public class MyFragment extends Fragment
                 mRecyclerView.setAdapter(mRecyclerViewAdapter);
                 mRecyclerView.setLayoutManager(mLayoutManager);
                 mRecyclerViewAdapter.setOnItemClickListener(this);
+                mRecyclerViewAdapter.setBtnClickListener(new BtnListenerInterface() {
+                    @Override
+                    public void onClick(final int position) {
+                        Log.d(className,"btn click "+position);
+
+                        openActionDlg(position);
+                    }
+                });
+
+
+                bottomBar.init();
+                bottomBar.setData(getMusicList(),getMusicMap());
+                closePlayIcon();
 
                 break;
         }
@@ -267,6 +156,22 @@ public class MyFragment extends Fragment
 
     }
 
+    /**
+     * 關掉Play的圖示
+     */
+    private void closePlayIcon(){
+        Song song = bottomBar.belmotPlayer.getPlayerEngine().getCurrentSong();
+
+        if(song ==null)
+            return;
+
+        int i = findCurrentIndex(songList,song.getPathId());
+        if(i <0)
+            return;
+        View vv = mRecyclerView.getChildAt(i);
+        ImageView image_play = (ImageView) vv.findViewById(R.id.imageView2);
+        image_play.setBackgroundResource(0);
+    }
 
     private void getMusics(){
         MediaMetadataRetriever metaRetriver = new MediaMetadataRetriever(); //取得媒體
@@ -302,6 +207,7 @@ public class MyFragment extends Fragment
                 pathId = cursor.getString(column_index);
                 singer = cursor.getString(singerCol);
 
+                Log.d(className,"pathId="+pathId);
                 songImage = null;
                 metaRetriver.setDataSource(pathId);
 
@@ -326,8 +232,6 @@ public class MyFragment extends Fragment
             } while (cursor.moveToNext());
 
 
-            belmotPlayer.getPlayerEngine().setMediaPathList(getMusicList());
-            belmotPlayer.getPlayerEngine().setMusicMap(getMusicMap());
         }
 //        txtSongName.setText("共有 " + songList.size() + " 首歌曲");
 
@@ -365,54 +269,59 @@ public class MyFragment extends Fragment
 
         Song song = null;
 
-        if (null != belmotPlayer.getPlayerEngine()) {
-            if (null == belmotPlayer) {
-                belmotPlayer = BelmotPlayer.getInstance();
-            }
+        if (null != bottomBar.belmotPlayer.getPlayerEngine()) {
+
+            song = songList.get(position);
+
+            if(song == null || song.getPathId()==null)
+                return;
+
+            if(bottomBar.belmotPlayer.getPlayerEngine().isPlaying()){//正播放
+
+                if(song.getPathId().equals(bottomBar.belmotPlayer.getPlayerEngine().getPlayingPath())){
+                    //同首
+                    bottomBar.belmotPlayer.getPlayerEngine().pause();
+                    //處理cardView
+                    holder.image_play.setBackgroundResource(0);
+                    bottomBar.closeBottomBar();
+                }
+                else{//不同首
+
+                    bottomBar.belmotPlayer.getPlayerEngine().reset();
 
 
-            if(belmotPlayer.getPlayerEngine().isPlaying()){//正播放
-                belmotPlayer.getPlayerEngine().pause();
+                    //先處理上一首
+                    View vv = mRecyclerView.getChildAt(bottomBar.belmotPlayer.getPlayerEngine().getOriIdx());
+                    ImageView image_play = (ImageView) vv.findViewById(R.id.imageView2);
+                    image_play.setBackgroundResource(0);
+                    bottomBar.closeBottomBar();
 
-                closePicture(holder,position);
-                belmotPlayer.getBottomBar(getActivity()).closeBottomBar();
+
+                    //再處理這首
+                    playing(holder ,song);
+                }
+
             }
             else{ //未播放
 
-                song = songList.get(position);
-                belmotPlayer.getPlayerEngine().setPlayingPath(song.getPathId());
-                if(belmotPlayer.getPlayerEngine().isPause()){
-                    belmotPlayer.getPlayerEngine().start();
-                }
-                else{
-                    belmotPlayer.getPlayerEngine().play();
-                }
 
-
-                //處理cardView
-                holder.image_album.setImageBitmap(song.getPic()); //重新set圖片
-                holder.image_play.setBackgroundResource(R.drawable.play);
-
-
-                //處理bottom bar
-
-                belmotPlayer.getBottomBar(getActivity())
-                        .setSongData(belmotPlayer.getPlayerEngine().getCurrentSong());
-
+                playing(holder ,song);
 
             }
 
 
             //播完後
-            belmotPlayer.getPlayerEngine().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+            bottomBar.belmotPlayer.getPlayerEngine().setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
 //                    belmotPlayer.getPlayerEngine().release(); //當我們呼叫 release() 方法時，則會釋放掉這個被佔用的資源
                     closePicture(holder,position);
-                    belmotPlayer.getBottomBar(getActivity()).closeBottomBar();
+                    bottomBar.closeBottomBar();
                 }
             });
 
+
+            bottomBar.belmotPlayer.getPlayerEngine().setOriIdx(position);
         }
 
 
@@ -431,6 +340,26 @@ public class MyFragment extends Fragment
     }
 
 
+
+    private void playing(MyRecyclerViewHolder holder, Song song){
+        bottomBar.belmotPlayer.getPlayerEngine().setPlayingPath(song.getPathId());
+        if(bottomBar.belmotPlayer.getPlayerEngine().isPause()){
+            bottomBar.belmotPlayer.getPlayerEngine().start();
+        }
+        else{
+            bottomBar.belmotPlayer.getPlayerEngine().play();
+        }
+
+
+        //處理cardView
+        holder.image_album.setImageBitmap(song.getPic()); //重新set圖片
+        holder.image_play.setBackgroundResource(R.drawable.play);
+
+
+        //處理bottom bar
+        bottomBar.setBarData();
+    }
+
     /**
      * 關掉圖片
      * @param holder
@@ -444,60 +373,8 @@ public class MyFragment extends Fragment
 
 
 
-    private void doStop() {
-        if (mediaPlayer != null) {
-            isPause = false;
-            mediaPlayer.stop();
-        }
-    }
-
-    private void doPause(){
-        if (mediaPlayer != null) {
-            isPause = true;
-            mediaPlayer.pause();
-        }
-    }
 
 
-    private void doPlay(long id) {
-        if (isPause) {//暫停中
-            playing(id);
-            isPause = false;
-        }else{//非暫停中(播放中)
-
-            mediaPlayer.pause();
-            isPause = true;
-        }
-
-    }
-
-
-    private void playing(long id){
-        if (songList == null || songList.size() == 0 ) {
-            return;
-        }
-
-
-
-        if (mediaPlayer != null && !isPause) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-        if (mediaPlayer == null) {
-            Uri songUri = ContentUris.withAppendedId(android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, id);
-            mediaPlayer = MediaPlayer.create(getActivity().getApplicationContext(), songUri);
-
-            //播完後
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    mediaPlayer.release(); //當我們呼叫 release() 方法時，則會釋放掉這個被佔用的資源
-                }
-            });
-        }
-        mediaPlayer.start();
-
-    }
 
 
     /**
@@ -538,31 +415,133 @@ public class MyFragment extends Fragment
     }
 
 
-    private void play() {
-        if (belmotPlayer.getPlayerEngine().isPlaying()) {//播放中
-            belmotPlayer.getPlayerEngine().pause();
-            seek_bar_handler.removeCallbacks(refresh);
-            playback_toggle_btn
-                    .setBackgroundResource(R.drawable.play_button_default);
-        } else if (belmotPlayer.getPlayerEngine().isPause()) {//暫停中
-            belmotPlayer.getPlayerEngine().start();
-            seek_bar_handler.postDelayed(refresh, 1000); //實現一個N秒的一定時器
-            playback_toggle_btn
-                    .setBackgroundResource(R.drawable.pause_button_default);
+    /**
+     * 找出這首歌在播放list的index
+     */
+    public int findCurrentIndex(List<Song>songList,String pathId){
+        int rtn = -1;
+        if(StringTool.isEmpty(pathId))
+            return rtn;
+
+
+        int i=0;
+        for(Song song:songList){
+            if(StringTool.isEmpty(song.getPathId()) &&
+                    song.getPathId().equals(pathId)){
+                rtn = i;
+            }
+            i++;
         }
 
+        return rtn;
     }
 
 
-    private Runnable refresh = new Runnable() {
-        public void run() {
-            int currently_Progress = seek_bar.getProgress() + 1000;
-            playback_current_time_tv.setText(belmotPlayer.getPlayerEngine()
-                    .getCurrentTime());
-            seek_bar_handler.postDelayed(refresh, 1000);
+    private void openActionDlg(final int position){
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        alert.setItems(new String[]{"加入播放清單", "刪除"},
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Log.d(className,"選到:" +i);
+
+                        if(i==0){//選到0
+
+                            Song song = songList.get(position);
+                            if(song ==null)
+                                return;
+
+                            openAddPlayListDlg(song.getPathId());
+
+                        }
+                        else if(i==1){ //選到1
+
+
+                            DlgUtil.getInstance().getDeleteDialog(getActivity())
+                                    .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+
+
+                                            //TODO
+                                        }
+                                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    //放生
+                                    dialogInterface.dismiss();
+                                }
+                            }).show();
+                        }
+                    }
+                }
+        ).setNegativeButton("取消",null).create().show();
+    }
+
+    private void openAddPlayListDlg(final String pathId){
+        final PlaylistDAO playlistDAO =new PlaylistDAO(getActivity());
+        List<Playlist> playlists = playlistDAO.getAll();
+
+        final String[] plAarray = new String[playlists.size()];
+        int i=0;
+        for(Playlist pl:playlists){
+            plAarray[i] = pl.getName();
+            i++;
         }
-    };
 
 
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        alert.setItems(plAarray,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Log.d(className,"選到:" +i);
+
+
+                        Playlist playlist = playlistDAO.getByName(plAarray[i]);
+
+                        if(playlist ==null)
+                            return;
+
+
+                        List<String> sList = playlist.getMusicList();
+
+                        if(sList == null)
+                            sList = new ArrayList<String>();
+
+
+                        sList.add(pathId);
+                        playlist.setMusicList(sList);
+                        playlistDAO.save(playlist);
+
+                        if(i==0){//選到0
+
+
+
+                        }
+                        else if(i==1){ //選到1
+
+
+                            DlgUtil.getInstance().getDeleteDialog(getActivity())
+                                    .setPositiveButton("確定", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+
+
+                                            //TODO
+                                        }
+                                    }).setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    //放生
+                                    dialogInterface.dismiss();
+                                }
+                            }).show();
+                        }
+                    }
+                }
+        ).setNegativeButton("取消",null).create().show();
+
+    }
 
 }
